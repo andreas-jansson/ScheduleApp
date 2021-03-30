@@ -1,45 +1,33 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, compontent, TextInput, Webview } from 'react';
 import { Button, StyleSheet, Text, View , scrollView,  RefreshControl, SafeAreaView, popOverView } from 'react-native';
 import HTMLView from 'react-native-htmlview';
-import DOMParser from 'react-native-html-parser';
+//import HTMLView from 'react-native-render-html';
 
 
 
 export default function App() {
   const [outputText, setOutputText] = useState('Uppdaterad');
 
-  const test1 = (string) =>{
-    return string + '!';
-  };
-
-  const test2 = () =>{
-    return 'Hej';
-  }
-
-  console.log(test1(test2()));
-
   console.log('Trying...');
-  /*
-  var param = 'startDatum=idag&slutDatum=2021-02-19&sprak=SV&sokMedAND=true&forklaringar=true&resurser=p.H%C3%B6gskoleingenj%C3%B6r+-+Datateknik+%C3%A5k+2-'
-  fetch('https://kronox.oru.se/setup/jsp/Schema.jsp?' + param)
-  .then(response => response.text())
-  .then(data => {console.log(data);})
-  console.log('testar')
-  */
+
 
  const getData = () => {
-  var param = 'startDatum=idag&slutDatum=2021-02-19&sprak=SV&sokMedAND=true&forklaringar=true&resurser=p.H%C3%B6gskoleingenj%C3%B6r+-+Datateknik+%C3%A5k+2-';
+  var param = 'startDatum=idag&slutDatum=2021-04-2&sprak=SV&sokMedAND=true&forklaringar=true&resurser=p.H%C3%B6gskoleingenj%C3%B6r+-+Datateknik+%C3%A5k+2-';
   return fetch('https://kronox.oru.se/setup/jsp/Schema.jsp?' + param)
     .then((response) => response.text())
     .then((data) => {
-      console.log(typeof(data))
+      console.log('getting data');
       return data;
     })
     .catch((error) => {
       console.error(error);
     });
 };
+
+
+
+
 
 var xdd = `
 <!DOCTYPE html>
@@ -62,18 +50,26 @@ var xdd = `
  </body>
 </html>`
 
-const parseData = (inputstring) => {
+let htmlstring = getData();
+
+htmlstring.then(function(result) {
+  return result;   
+  })
+
+//const printTags = (tags) => console.log(tags.map(t => t.toString()).join(' '));
+
+const parseData = (string) => {
   console.log('parseData');
-  console.log(inputstring);
-  const html = inputstring;    
-  const parser = new DOMParser.DOMParser();
-  const parsed = parser.parseFromString(html, 'text/html');
-  console.log(parsed)
-  return parsed;
+  var htmltext = string;
+  var JSSoup = require('jssoup').default;
+  var soup = new JSSoup(htmltext);
+  var soup2 = new JSSoup(soup.findAll('table', { class: 'schemaTabell' }));
+  var soup3 = new JSSoup(soup.findAll('table', { class: 'commonCell' }));
+  console.log(soup3.toString());
+  return soup3.toString();
 };
 
-parseData(xdd);
-
+//parseData(xdd);
 
 const test = () => {
   var teststr = `
@@ -97,7 +93,6 @@ const test = () => {
    </body>
   </html>
   `
-
   return teststr
 }
 
@@ -117,7 +112,7 @@ const test = () => {
       <View style={styles.tableContainer}>
         <Text style={styles.tableTitle}>Vecka: 7</Text>
 
-        <HTMLView value={getData()} styleSheet={styles.table} />
+        <HTMLView HTML={parseData(htmlstring) || '<p>Empty</p>'} styleSheet={styles.table} />
       </View>
 
       <View>
@@ -132,6 +127,7 @@ const test = () => {
     //</SafeAreaView>
   );
 }
+
 
 
 
@@ -205,5 +201,5 @@ const styles = StyleSheet.create({
     marginBottom: 100
   }
 
-});
+}); 
 
